@@ -23,20 +23,27 @@ module.exports = function (grunt) {
         // Iterate over all specified file groups.
         this.files.forEach(function (fileGroup) {
             // Concat specified files.
-            var src = fileGroup.src.filter(function (filepath) {
-                // Warn on and remove invalid source files (if nonull was set).
-                var realFilepath = fileGroup.cwd ? [fileGroup.cwd, filepath].join('/') : filepath;
-                if (!grunt.file.exists(realFilepath)) {
-                    grunt.log.warn('Source file "' + filepath + '" not found.');
-                    return false;
-                } else {
-                    return true;
-                }
-            }).forEach(function (realFilepath) {
-                grunt.log.writeln('Input file: ' + realFilepath);
-                grunt.log.writeln('Dest dir: ' + fileGroup.dest);
-            });
-                
+            var src = fileGroup.src
+                .map(function (filepath) {
+                    if (fileGroup.cwd) {
+                        return [fileGroup.cwd, filepath].join('/');
+                    } else {
+                        return filepath;
+                    }
+                })
+                .filter(function (filepath) {
+                    // Warn on and remove invalid source files (if nonull was set).
+                    if (!grunt.file.exists(filepath)) {
+                        grunt.log.warn('Source file "' + filepath + '" not found.');
+                        return false;
+                    } else {
+                        return true;
+                    }
+                })
+                .forEach(function (filepath) {
+                    grunt.log.writeln('Input file: ' + filepath);
+                    grunt.log.writeln('Dest dir: ' + fileGroup.dest);
+                });
 //                map(function (filepath) {
 //                // Read file source.
 //                return grunt.file.read(filepath);
@@ -44,10 +51,10 @@ module.exports = function (grunt) {
 
             // Handle options.
             //src += options.punctuation;
-            
-            
-            
-            
+
+
+
+
 
             // Write the destination file.
             // grunt.file.write(f.dest, src);

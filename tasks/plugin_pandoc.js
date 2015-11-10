@@ -25,14 +25,15 @@ module.exports = function (grunt) {
             // Concat specified files.
             var src = fileGroup.src.filter(function (filepath) {
                 // Warn on and remove invalid source files (if nonull was set).
-                if (!grunt.file.exists(filepath)) {
+                var realFilepath = fileGroup.cwd ? [fileGroup.cwd, filepath].join('/') : filepath;
+                if (!grunt.file.exists(realFilepath)) {
                     grunt.log.warn('Source file "' + filepath + '" not found.');
                     return false;
                 } else {
                     return true;
                 }
-            }).forEach(function (filepath) {
-                grunt.log.writeln('Input file: ' + filepath);
+            }).forEach(function (realFilepath) {
+                grunt.log.writeln('Input file: ' + realFilepath);
                 grunt.log.writeln('Dest dir: ' + fileGroup.dest);
             });
                 

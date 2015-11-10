@@ -17,7 +17,9 @@ module.exports = function (grunt) {
         // Merge task-specific and/or target-specific options with these defaults.
         var options = this.options({
             punctuation: '.',
-            separator: ', '
+            separator: ', ',
+            read: 'markdown',
+            write: 'html'
         });
 
         // Iterate over all specified file groups.
@@ -47,9 +49,21 @@ module.exports = function (grunt) {
                     }
                 })
                 .forEach(function (filepath) {
-                    var dest = [fileGroup.dest, filepath.original].join('/');
+                    var dest = [fileGroup.dest, filepath.original].join('/'),
+                        command = [
+                            'pandoc', 
+                            '-o', dest,
+                            '-r', options.read,
+                            '-w', options.write
+                        ];
+                        if (options.template) {
+                            command.push('-t');
+                            command.push(options.template);
+                        }
+                        command.push(filepath.resolved);
                     grunt.log.writeln('Input file: ' + filepath.resolved);
                     grunt.log.writeln('Dest dir: ' + dest);
+                    grunt.log.writeln('Command: ' + command.join(' '));
                 });
 //                map(function (filepath) {
 //                // Read file source.

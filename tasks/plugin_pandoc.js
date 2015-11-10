@@ -57,7 +57,7 @@ module.exports = function (grunt) {
                     var original = path.parse(filepath.original),
                         dest = [fileGroup.dest, original.dir, original.name + '.' + options.extension]
                             .filter(function (item) {
-                                item ? true : false;
+                                return item ? true : false;
                             })
                             .join('/'),
                         command = [

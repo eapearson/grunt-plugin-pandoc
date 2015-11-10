@@ -8,7 +8,8 @@
 module.exports = function (grunt) {
     'use strict';
 
-    var childproc = require('child_process');
+    var childproc = require('child_process'),
+        path = require('path');
 
     // Please see the Grunt documentation for more information regarding task
     // creation: http://gruntjs.com/creating-tasks
@@ -21,13 +22,17 @@ module.exports = function (grunt) {
             read: 'markdown',
             write: 'html'
         });
+        
+        if (!options.extension) {
+            options.extension = options.write;
+        }
 
         // Iterate over all specified file groups.
         this.files.forEach(function (fileGroup) {
             // Concat specified files.
             fileGroup.src
                 .map(function (filepath) {
-                    if (fileGroup.cwd) {
+                    if (fileGroup.cwd) {                        
                         return {
                             resolved: [fileGroup.cwd, filepath].join('/'),
                             original: filepath
@@ -49,7 +54,8 @@ module.exports = function (grunt) {
                     }
                 })
                 .forEach(function (filepath) {
-                    var dest = [fileGroup.dest, filepath.original].join('/'),
+                    var original = path.parse(filepath.original),
+                        dest = [fileGroup.dest, original.dir, original.name + '.' + options.extension].join('/'),
                         command = [
                             'pandoc', 
                             '-o', dest,

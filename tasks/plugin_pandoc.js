@@ -8,7 +8,8 @@
 module.exports = function (grunt) {
     'use strict';
 
-    var exec = require('child_process').exec,
+    var Promise = require('bluebird'),
+        childproc = Promise.promisify(require('child_process')),
         path = require('path');
 
     // Please see the Grunt documentation for more information regarding task
@@ -16,13 +17,14 @@ module.exports = function (grunt) {
 
     grunt.registerMultiTask('plugin_pandoc', 'Grunt plugin for running pandoc', function () {
         // Merge task-specific and/or target-specific options with these defaults.
-        var options = this.options({
-            punctuation: '.',
-            separator: ', ',
-            read: 'markdown',
-            write: 'html'
-        });
-        
+        var done = this.async(),
+            options = this.options({
+                punctuation: '.',
+                separator: ', ',
+                read: 'markdown',
+                write: 'html'
+            });
+
         if (!options.extension) {
             options.extension = options.write;
         }
@@ -30,9 +32,9 @@ module.exports = function (grunt) {
         // Iterate over all specified file groups.
         this.files.forEach(function (fileGroup) {
             // Concat specified files.
-            fileGroup.src
+            Promise.all(fileGroup.src
                 .map(function (filepath) {
-                    if (fileGroup.cwd) {                        
+                    if (fileGroup.cwd) {
                         return {
                             resolved: [fileGroup.cwd, filepath].join('/'),
                             original: filepath
@@ -53,52 +55,40 @@ module.exports = function (grunt) {
                         return true;
                     }
                 })
-                .forEach(function (filepath) {
+                .map(function (filepath) {
                     var original = path.parse(filepath.original),
                         dest = [fileGroup.dest, original.dir, original.name + '.' + options.extension]
-                            .filter(function (item) {
-                                return item ? true : false;
-                            })
-                            .join('/'),
+                        .filter(function (item) {
+                            return item ? true : false;
+                        })
+                        .join('/'),
                         command = [
-                            'pandoc', 
+                            'pandoc',
                             '-o', dest,
                             '-r', options.read,
                             '-w', options.write
                         ];
-                        if (options.template) {
-                            command.push(['--template', options.template].join('='));
-                        }
-                        command.push(filepath.resolved);
-                        grunt.log.writeln('Input file: ' + filepath.resolved);
-                        grunt.log.writeln('Dest dir: ' + dest);
-                        grunt.log.writeln('Command: ' + command.join(' '));
-                        exec(command.join(' '), function (error, stdout, stderr) {
+                    if (options.template) {
+                        command.push(['--template', options.template].join('='));
+                    }
+                    command.push(filepath.resolved);
+                    return childproc.execAsync(command.join(' '))
+                        .then(function (error, stdout, stderr) {
                             grunt.log.writeln('stdout: ' + stdout);
                             grunt.log.writeln('stderr: ' + stderr);
                             if (error !== null) {
                                 grunt.log.writeln('error: ' + error);
                             }
                         });
+                }))
+                .then(function () {
+                    grunt.log.ok('Pandoc all done!');
+                    done();
+                })
+                .catch(function (err) {
+                    grunt.log.error('ERROR running pandoc');
+                    console.log(err);
                 });
-//                map(function (filepath) {
-//                // Read file source.
-//                return grunt.file.read(filepath);
-//            }).join(grunt.util.normalizelf(options.separator));
-
-            // Handle options.
-            //src += options.punctuation;
-
-
-
-
-
-            // Write the destination file.
-            // grunt.file.write(f.dest, src);
-
-            // Print a success message.
-            // grunt.log.writeln('File "' + fileGroup.dest + '" created.');
-            grunt.log.writeln('File group "' + fileGroup.dest + '" done.');
         });
     });
 

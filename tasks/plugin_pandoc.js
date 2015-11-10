@@ -55,7 +55,11 @@ module.exports = function (grunt) {
                 })
                 .forEach(function (filepath) {
                     var original = path.parse(filepath.original),
-                        dest = [fileGroup.dest, original.dir, original.name + '.' + options.extension].join('/'),
+                        dest = [fileGroup.dest, original.dir, original.name + '.' + options.extension]
+                            .filter(function (item) {
+                                item ? true : false;
+                            })
+                            .join('/'),
                         command = [
                             'pandoc', 
                             '-o', dest,

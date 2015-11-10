@@ -67,8 +67,7 @@ module.exports = function (grunt) {
                             '-w', options.write
                         ];
                         if (options.template) {
-                            command.push('-t');
-                            command.push(options.template);
+                            command.push(['--template', options.template].join('='));
                         }
                         command.push(filepath.resolved);
                         grunt.log.writeln('Input file: ' + filepath.resolved);

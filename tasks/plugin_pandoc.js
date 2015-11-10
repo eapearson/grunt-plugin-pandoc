@@ -23,26 +23,33 @@ module.exports = function (grunt) {
         // Iterate over all specified file groups.
         this.files.forEach(function (fileGroup) {
             // Concat specified files.
-            var src = fileGroup.src
+            fileGroup.src
                 .map(function (filepath) {
                     if (fileGroup.cwd) {
-                        return [fileGroup.cwd, filepath].join('/');
+                        return {
+                            resolved: [fileGroup.cwd, filepath].join('/'),
+                            original: filepath
+                        };
                     } else {
-                        return filepath;
+                        return {
+                            resolved: filepath,
+                            original: filepath
+                        };
                     }
                 })
                 .filter(function (filepath) {
                     // Warn on and remove invalid source files (if nonull was set).
-                    if (!grunt.file.exists(filepath)) {
-                        grunt.log.warn('Source file "' + filepath + '" not found.');
+                    if (!grunt.file.exists(filepath.resolved)) {
+                        grunt.log.warn('Resolved source file "' + filepath.resolved + '" not found.');
                         return false;
                     } else {
                         return true;
                     }
                 })
                 .forEach(function (filepath) {
-                    grunt.log.writeln('Input file: ' + filepath);
-                    grunt.log.writeln('Dest dir: ' + fileGroup.dest);
+                    var dest = [fileGroup.dest, filepath.original].join('/');
+                    grunt.log.writeln('Input file: ' + filepath.resolved);
+                    grunt.log.writeln('Dest dir: ' + dest);
                 });
 //                map(function (filepath) {
 //                // Read file source.
@@ -61,7 +68,7 @@ module.exports = function (grunt) {
 
             // Print a success message.
             // grunt.log.writeln('File "' + fileGroup.dest + '" created.');
-            grunt.log.writeln('File group ' + fileGroup.dest + 'done.');
+            grunt.log.writeln('File group "' + fileGroup.dest + '" done.');
         });
     });
 

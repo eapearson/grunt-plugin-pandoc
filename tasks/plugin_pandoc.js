@@ -8,7 +8,7 @@
 module.exports = function (grunt) {
     'use strict';
 
-    var childproc = require('child_process'),
+    var exec = require('child_process').exec,
         path = require('path');
 
     // Please see the Grunt documentation for more information regarding task
@@ -71,9 +71,16 @@ module.exports = function (grunt) {
                             command.push(options.template);
                         }
                         command.push(filepath.resolved);
-                    grunt.log.writeln('Input file: ' + filepath.resolved);
-                    grunt.log.writeln('Dest dir: ' + dest);
-                    grunt.log.writeln('Command: ' + command.join(' '));
+                        grunt.log.writeln('Input file: ' + filepath.resolved);
+                        grunt.log.writeln('Dest dir: ' + dest);
+                        grunt.log.writeln('Command: ' + command.join(' '));
+                        exec(command.join(' '), function (error, stdout, stderr) {
+                            grunt.log.writeln('stdout: ' + stdout);
+                            grunt.log.writeln('stderr: ' + stderr);
+                            if (error !== null) {
+                                grunt.log.writeln('error: ' + error);
+                            }
+                        });
                 });
 //                map(function (filepath) {
 //                // Read file source.

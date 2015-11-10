@@ -9,7 +9,7 @@ module.exports = function (grunt) {
     'use strict';
 
     var Promise = require('bluebird'),
-        childproc = Promise.promisify(require('child_process')),
+        execAsync = Promise.promisify(require('child_process').exec),
         path = require('path');
 
     // Please see the Grunt documentation for more information regarding task
@@ -72,7 +72,7 @@ module.exports = function (grunt) {
                         command.push(['--template', options.template].join('='));
                     }
                     command.push(filepath.resolved);
-                    return childproc.execAsync(command.join(' '))
+                    return execAsync(command.join(' '))
                         .then(function (error, stdout, stderr) {
                             grunt.log.writeln('stdout: ' + stdout);
                             grunt.log.writeln('stderr: ' + stderr);

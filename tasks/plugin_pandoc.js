@@ -84,10 +84,6 @@ module.exports = function (grunt) {
                             if (stderr) {
                                 grunt.log.writeln(stderr);
                             }
-                            if (error !== null) {
-                                grunt.log.writeln('ERROR: ' + error);
-                                console.log(error);
-                            }
                         });
                 }))
                 .then(function () {

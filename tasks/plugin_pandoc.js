@@ -9,7 +9,9 @@ module.exports = function (grunt) {
     'use strict';
 
     var Promise = require('bluebird'),
-        execAsync = Promise.promisify(require('child_process').exec),
+        execAsync = Promise.promisify(require('child_process').exec, {
+            multiArgs: true
+        }),
         path = require('path');
 
     // Please see the Grunt documentation for more information regarding task
@@ -73,16 +75,23 @@ module.exports = function (grunt) {
                     }
                     command.push(filepath.resolved);
                     return execAsync(command.join(' '))
-                        .then(function (error, stdout, stderr) {
-                            grunt.log.writeln('stdout: ' + stdout);
-                            grunt.log.writeln('stderr: ' + stderr);
+                        .then(function (out) {
+                            var stdout = out[0],
+                                stderr = out[1];
+                            if (stdout) {
+                                grunt.log.writeln(stdout);
+                            }
+                            if (stderr) {
+                                grunt.log.writeln(stderr);
+                            }
                             if (error !== null) {
-                                grunt.log.writeln('error: ' + error);
+                                grunt.log.writeln('ERROR: ' + error);
+                                console.log(error);
                             }
                         });
                 }))
                 .then(function () {
-                    grunt.log.ok('Pandoc all done!');
+                    grunt.log.ok('Pandoc finished!');
                     done();
                 })
                 .catch(function (err) {
